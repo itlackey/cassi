@@ -12,15 +12,20 @@ import fs from "fs";
  */
 export async function generateMarkdownFromCss(
   cssPattern,
-  outputDir = "./output",
-  promptFile = "./src/prompt.txt"
+  outputDir = null,
+  promptFile = null
 ) {
   const openAiUrl = process.env.OPENAI_BASE_URL ?? "http://localhost:11434/v1";
   const openAiKey = process.env.OPENAI_API_KEY ?? "ollama";
   const model = process.env.CASSI_MODEL_NAME ?? "qwen2.5-coder:latest";
 
-  console.log(`Cassi: Starting on documentation for ${cssPattern}, using model: ${model}...`);
-  
+  if (!outputDir) outputDir = "./output";
+  if (!promptFile) promptFile = "./src/prompt.txt";
+
+  console.log(
+    `Cassi: Starting on documentation for ${cssPattern}, using model: ${model}...`
+  );
+
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);
   }
@@ -60,7 +65,7 @@ export async function generateMarkdownFromCss(
         if (!response.ok) {
           const errorText = await response.text();
           console.error(
-            `Failed to generate markdown for selector: ${selector}`,
+            `Cassi: Failed to generate markdown for selector: ${selector}`,
             errorText
           );
           continue;
@@ -75,10 +80,18 @@ export async function generateMarkdownFromCss(
           .replace(/[^\w-]/g, "-")
           .replaceAll("--", "-")}.md`;
         const filePath = `${outputDir}/${fileName}`;
-        await writeFile(filePath, markdownContent + "\n", "utf-8");
-        console.log(
-          `Generated markdown for selector: ${selector} -> ${filePath}`
-        );
+        writeFile(filePath, markdownContent?.trimStart() + "\n", "utf-8")
+          .then(() => {
+            console.log(
+              `Cassi: Generated markdown for selector: ${selector} -> ${filePath}`
+            );
+          })
+          .catch((err) => {
+            console.error(
+              `Cassi: Failed to save markdown file for selector: ${selector}`,
+              err
+            );
+          });
       }
     }
   }

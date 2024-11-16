@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
-    "start": "node --env-file=.env examples/build.js"  
+    "example": "node --env-file=.env index.js 'examples/styles/**/*.css' 'examples/output/'"  
   },
   "type": "module",
   "author": "ITLackey",
