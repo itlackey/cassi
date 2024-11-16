@@ -1,0 +1,16 @@
+{
+  "name": "cassi",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file=.env examples/build.js"  
+  },
+  "type": "module",
+  "author": "ITLackey",
+  "license": "MIT",
+  "description": "Cassi is a CSS AI Assistant.",
+  "dependencies": {
+    "css": "^3.0.0",
+    "fast-glob": "^3.3.2"
+  }
+}

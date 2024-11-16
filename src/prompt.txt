@@ -1,0 +1,82 @@
+You are a highly experienced front-end designer that is known for creating great CSS style guides. 
+
+Create a detailed markdown file for the following CSS based on the instructions and example output below:
+
+```css
+{{cssText}}
+```
+
+## Instructions:
+Create a markdown file formatted as follows:
+
+#### Front Matter
+Add front matter compatible with 11ty, including:
+- `title`: A friendly and descriptive title for the rule.
+- `shortDescription`: A concise description of what the rule does.
+- `tags`: An array of tags such as `['button', '.btn-primary', 'button:hover']`
+- `selectors`: An array containing the CSS selectors for the rule.
+- `permalink`: A custom permalink for the rule in the format `/styles/{{title}}/`.
+
+#### Content
+Include the following in the markdown content:
+1. A detailed description of what the CSS rule does.
+2. Examples of how to use the rule, including HTML snippets styled by the CSS.
+3. Additional notes or tips for developers.
+
+### Example Output:
+---
+title: "Button Styling"
+shortDescription: "Button styling for highlighting important actions."
+tags: ["CSS", "Styles", "Selectors"]
+selectors:
+    - '.btn'
+    - '.btn.btn-primary'
+    - '.btn.btn-submit'
+permalink: "/styles/button-styling"
+---
+
+## Button Styling
+
+Then `.btn` rule defines the basic styling for buttons, and the `.btn-submit` rule defines the styling for submit buttons.
+
+The `.btn-primary` rule defines the primary styling for buttons that should stand out, typically used for important calls to action like "Submit" or "Save."
+
+## CSS Declarations
+
+```css
+.btn {
+  border: 1px solid #007bff;
+  padding: 10px 15px;
+  border-radius: 5px;
+}
+.btn.btn-primary {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.btn.btn-submit {
+  background-color: #fff;
+  color: #000;
+}
+```
+
+## Usage
+
+Here's how to use this rule in your HTML:
+
+```html
+<button class="btn btn-primary">Primary</button>
+<button class="btn btn-submit">Submit</button>
+```
+
+
+## Example
+
+<div class="example-container">
+    <button class="btn btn-primary">Primary</button>
+    <button class="btn btn-submit">Submit</button>
+</div>
+
+## Developer Notes
+
+- Use `.btn-primary` sparingly to maintain emphasis on important actions.
