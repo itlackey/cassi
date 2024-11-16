@@ -1,6 +1,6 @@
 # Cassi - AI-Powered CSS Style Guide Generator
 
-<img src="./assets/logo.webp" alt="Cassi Logo" style="max-width: 30px; float: left;">
+<img src="./assets/logo-small.webp" alt="Cassi Logo" style="float: left;">
 
 Cassi is an innovative tool that generates markdown-based documentation for your CSS files using AI. Whether you're managing a legacy codebase or building new projects, Cassi simplifies the process of creating a comprehensive and customizable CSS style guide.
 <hr style="clear: both" />
@@ -54,7 +54,7 @@ Examples can be found in the `examples/output` directory. Each file corresponds 
 ## Usage
 
 1. **Set Up Your Environment**  
-   Create a `.env` file in the root directory and add the following variables. Update the values as needed based on your setup.
+   Create a `.env` file in the root directory and add the following variables. Update the values as needed based on your setup. If you skip this step, Cassi will use the settings shown below.
 
    ```plaintext
     OPENAI_BASE_URL="http://localhost:11434/v1"
