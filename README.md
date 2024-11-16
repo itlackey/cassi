@@ -96,7 +96,7 @@ Cassi was built to solve a problem I was facing. Now that I can easily generate 
 Here are some features I am considering adding:
 
 - **11ty Starter Kit** - A pre-configured 11ty project that includes Cassi and is pre-configured to generate a style guide from the files created by Cassi.
-- **Proper CLI** to allow syntax like `cassi generate styles/*.css --output-dir docs` for generating documentation or `cassi build` to generate a style guide using 11ty.
+- **Proper CLI** to allow syntax like `cassi generate styles/*.css --output-dir docs` for generating documentation, `cassi download http://some.site`, or `cassi build` to generate a style guide using 11ty.
 - **Incremental Updates** - Add logic to allow Cassi to determine what CSS has been added/modified, and add/update the markdown documents accordingly.
 - **Style Grouping** - Allow users to group CSS rules into categories or sections for easier navigation.
 
