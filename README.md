@@ -1,6 +1,6 @@
 # Cassi - AI-Powered CSS Assistant
 
-![Cassi Logo](./site/assets/imgs/logo-small.webp)
+![Cassi Logo](./example/assets/imgs/logo-small.webp)
 
 Cassi is an innovative tool that generates markdown-based documentation for your CSS files using AI. Whether you're managing a legacy codebase or building new projects, Cassi simplifies the process of creating a comprehensive and customizable CSS style guide.
 
@@ -83,9 +83,9 @@ Cassi was built to solve a problem I was facing. Now that I can easily generate 
 
 Here are some features I am considering adding:
 
-- **Proper CLI** with subcommands like `generate`, `build`, etc.
+- **Proper CLI** with subcommands like `generate`, `init`, etc.
   - **DONE** => `cassi generate styles/*.css --output-dir docs` for generating documentation
-  - **DONE** => `cassi build` to generate a style guide using 11ty.
+  - `cassi init` to create a new style guide site using 11ty.
   - `cassi download http://some.site` to download the CSS file(s) from a URL.
 - **11ty Starter Kit** - A pre-configured 11ty project that includes Cassi and is pre-configured to generate a style guide from the files created by Cassi.
 - **Incremental Updates** - Add logic to allow Cassi to determine what CSS has been added/modified, and add/update the markdown documents accordingly.

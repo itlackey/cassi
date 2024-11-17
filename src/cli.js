@@ -44,40 +44,4 @@ program
     }
   });
 
-// Subcommand: build
-program
-  .command("build")
-  .description("Build static site using Eleventy")
-  .option(
-    "--input <inputDir>",
-    "Directory containing markdown files",
-    "./pages"
-  )
-  .option(
-    "--output <outputDir>",
-    "Directory to save the static site",
-    "./.build"
-  )
-  .action(async (options) => {
-    const { input, output } = options;
-
-    try {
-      console.log("Building static site with Eleventy...");
-      const elev = new Eleventy(input, output, {
-        config: (eleventyConfig) => {
-          eleventyConfig.setDataDirectory("data");
-          eleventyConfig.setIncludesDirectory("includes");
-          eleventyConfig.setLayoutsDirectory("layouts");
-          eleventyConfig.addPassthroughCopy(input + "/assets");
-          eleventyConfig.setTemplateFormats("md");
-          eleventyConfig.setQuietMode(true);          
-        },
-      });
-      await elev.write();
-      console.log(`Static site generated at: ${output}`);
-    } catch (err) {
-      console.error("Error building static site:", err.message);
-      process.exit(1);
-    }
-  });
 program.parse(process.argv);

@@ -1,13 +1,12 @@
 {
   "name": "@itlackey.dev/cassi",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "src/cli.js",
   "bin": {
     "cassi": "./src/cli.js"
   },
   "scripts": {
-    "example:generate": "node --env-file=.env ./src/cli.js 'site/assets/**/*.css' --output 'site/pages/'",
-    "example:build": "node --env-file=.env ./src/cli.js --input site --output .build"
+    "example:generate": "node --env-file=.env ./src/cli.js 'example/assets/**/*.css' --output 'example/pages/cassi/'"
   },
   "type": "module",
   "author": "ITLackey",
