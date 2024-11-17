@@ -1,15 +1,19 @@
 {
   "name": "cassi",
-  "version": "0.0.1",
-  "main": "index.js",
+  "version": "0.0.2",
+  "main": "src/cli.js",
+  "bin": {
+    "cassi": "./src/cli.js"
+  },
   "scripts": {
-    "example": "node --env-file=.env index.js 'examples/styles/**/*.css' 'examples/output/'"  
+    "example": "node --env-file=.env index.js 'examples/styles/**/*.css' 'examples/output/'"
   },
   "type": "module",
   "author": "ITLackey",
   "license": "MIT",
   "description": "Cassi is a CSS AI Assistant.",
   "dependencies": {
+    "commander": "^12.1.0",
     "css": "^3.0.0",
     "fast-glob": "^3.3.2"
   }

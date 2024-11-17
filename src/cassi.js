@@ -29,6 +29,8 @@ export async function generateMarkdownFromCss(
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);
   }
+
+  if(!fs.existsSync(promptFile)) throw new Error("Prompt file not found: " + promptFile);
   const promptTemplate = await readFile(promptFile, "utf-8");
 
   const cssFiles = await fg(cssPattern);
