@@ -32,7 +32,7 @@ selectors:
     - '.btn'
     - '.btn.btn-primary'
     - '.btn.btn-submit'
-permalink: "/styles/button-styling"
+permalink: "/styles/button-styling.html"
 ---
 
 ## Button Styling

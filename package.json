@@ -1,18 +1,21 @@
 {
-  "name": "cassi",
-  "version": "0.0.2",
+  "name": "@itlackey.dev/cassi",
+  "version": "0.0.3",
   "main": "src/cli.js",
   "bin": {
     "cassi": "./src/cli.js"
   },
   "scripts": {
-    "example": "node --env-file=.env index.js 'examples/styles/**/*.css' 'examples/output/'"
+    "example:generate": "node --env-file=.env ./src/cli.js 'site/assets/**/*.css' --output 'site/pages/'",
+    "example:build": "node --env-file=.env ./src/cli.js --input site --output .build"
   },
   "type": "module",
   "author": "ITLackey",
   "license": "MIT",
   "description": "Cassi is a CSS AI Assistant.",
   "dependencies": {
+    "@11ty/eleventy": "^3.0.0",
+    "cassi": "github:itlackey/cassi",
     "commander": "^12.1.0",
     "css": "^3.0.0",
     "fast-glob": "^3.3.2"

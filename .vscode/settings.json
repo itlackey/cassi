@@ -1,7 +1,17 @@
 {
     "cSpell.words": [
-        "Cassi"
+        "Cassi",
+        "itlackey"
     ],
     "explorer.excludeGitIgnore": false,
-    "explorer.fileNesting.enabled": false
+    "explorer.fileNesting.enabled": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/node_modules": true    
+    }
 }
