@@ -34,14 +34,17 @@ program
   )
   .option(
     "--prompt-file <prompt>",
-    "Path to the prompt template file",
-    "./src/prompt.txt"
+    "Path to the prompt template file"
+  )
+  .option(
+    "--force, -f",
+    "Force existing files to be updated"
   )
   .action(async (cssPattern, options) => {
-    const { output, promptFile } = options;
+    const { output, promptFile, force } = options;
 
     try {
-      await generate(cssPattern, output, promptFile);
+      await generate(cssPattern, output, promptFile, force);
     } catch (err) {
       console.error(
         "Cassi: I encountered an error while generating markdown:",

@@ -1,12 +1,12 @@
 import fg from "fast-glob";
 import { readFile, writeFile, readdir } from "fs/promises";
 import css from "css";
-import fs from "fs";
+import fs, { existsSync } from "fs";
 import fm from "gray-matter";
 import path from "path";
 
 /**
- * Retrieves the 'id' property from the front matter of all Markdown files in a given directory.
+ * Retrieves the 'id', 'hash', 'source', and 'filePath' property from the front matter of all Markdown files in a given directory.
  *
  * @param {string} directory - The path to the directory containing Markdown files.
  * @returns {Promise<Array<{ filePath: string, id: any }>>} - A promise that resolves to an array of objects,
@@ -27,7 +27,12 @@ async function getIdsFromFrontMatter(directory) {
       mdFiles.map(async (filePath) => {
         const content = await readFile(filePath, "utf-8");
         const { data } = fm(content);
-        return { filePath, id: data.id };
+        return {
+          filePath,
+          id: data.cassi?.id,
+          hash: data.cassi?.hash,
+          source: data.cassi?.source,
+        };
       })
     );
 
@@ -48,7 +53,8 @@ async function getIdsFromFrontMatter(directory) {
 export async function generate(
   cssPattern,
   outputDir = null,
-  promptFile = null
+  promptFile = null,
+  force = false
 ) {
   const openAiUrl = process.env.OPENAI_BASE_URL ?? "http://localhost:11434/v1";
   const openAiUrlSuffix = process.env.OPENAI_BASE_URL_SUFFIX ?? "";
@@ -56,7 +62,12 @@ export async function generate(
   const model = process.env.CASSI_MODEL_NAME ?? "qwen2.5-coder:latest"; //"llama3.2";
 
   if (!outputDir) outputDir = "./output";
-  if (!promptFile) promptFile = "./src/prompt.txt";
+  if (!promptFile) {
+    //Should use the prompt file in the same directory as the script
+    promptFile = path.join(import.meta.dirname, "prompt.txt");
+    if (!existsSync(promptFile))
+      throw new Error("Prompt file not found: " + promptFile);
+  }
 
   console.log(
     `Cassi: I am starting on the documentation for these files ${cssPattern}, using model: ${model}...`
@@ -75,6 +86,9 @@ export async function generate(
   const promptTemplate = await readFile(promptFile, "utf-8");
 
   const cssFiles = await fg(cssPattern);
+  console.log(
+    `Cassi: Found ${cssFiles.length} CSS files to process matching the ${cssPattern} glob.`
+  );
 
   for (const file of cssFiles) {
     try {
@@ -92,6 +106,16 @@ export async function generate(
             };
             let cssText = css.stringify(ast);
             let selector = rule.selectors.join(", ");
+            const id = btoa(rule.selectors.join(", "));
+            const hash = btoa(cssText);
+
+            // Check if the rule already exists
+            if (!force && existingFiles.some((f) => f.id == id && f.hash == hash)) {
+              console.log(
+                `Cassi: The documentation for ${selector} already exists, skipping it.`
+              );
+              continue;
+            }
 
             const prompt = promptTemplate.replace("{{cssText}}", cssText);
 
@@ -102,7 +126,7 @@ export async function generate(
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${openAiKey}`,
-                'api-key': openAiKey,
+                "api-key": openAiKey,
               },
               body: JSON.stringify({
                 model,
@@ -196,10 +220,13 @@ export async function generate(
             const matter = fm(markdownContent, { excerpt: true });
             //console.log("matter", matter);
 
+            const cassiData = {
+              id,hash,source: file
+            }
             const title = matter.data.title ?? selector;
             matter.data.selectors = rule.selectors;
-            matter.data.id = btoa(rule.selectors.join(", "));
-            matter.data.filepath = file;
+            matter.data.tags = [...(matter.data.tags ?? []), "cassi"];
+            matter.data.cassi = cassiData;
             matter.data.shortDescription =
               matter.data.shortDescription ?? matter.excerpt;
             matter.content +=
@@ -222,12 +249,14 @@ export async function generate(
             } else {
               // Track new files, for reconciliation later.
               currentFiles.push({
-                id: matter.data.id,
+                id: matter.data.cassi.id,
+                hash: matter.data.cassi.hash,
+                source: matter.data.cassi.source,
                 filePath: filePath,
               });
             }
 
-            writeFile(filePath, fm.stringify(matter), "utf-8")
+            await writeFile(filePath, fm.stringify(matter), "utf-8")
               .then(() => {
                 console.log(
                   `Cassi: The documentation for selector: ${selector} is now saved ${filePath}.`
@@ -252,17 +281,22 @@ export async function generate(
     }
   }
 
-  // Delete all existing files that are not in the currentFiles array.
-  const outdatedFiles = existingFiles.filter(
-    (f) => !currentFiles.some((cf) => cf.id == f.id)
+  // Delete all existing files that are not in the currentFiles array for the currently processed CSS files
+  const outdatedFiles = existingFiles.filter((e) =>
+    cssFiles
+      .some((p) => p === e.source)
+      .filter((f) => !currentFiles.some((cf) => cf.id == f.id))
   );
 
   if (outdatedFiles.length > 0) {
     console.log(`Cassi: Deleting ${outdatedFiles.length} outdated files.`);
     for (const file of outdatedFiles) {
       try {
-        fs.unlinkSync(file.filePath);
-        console.log(`Cassi: I have deleted ${file.filePath}.`);
+        // fs.unlinkSync(file.filePath);
+        //console.log(`Cassi: I have deleted ${file.filePath}.`);
+        console.warn(
+          `Cassi: The ${file.filePath} does not appear to be needed. You may want to delete this file.`
+        );
       } catch (err) {
         console.error(
           `Cassi: I was unable to delete the file ${file.filePath}.`,
@@ -271,5 +305,4 @@ export async function generate(
       }
     }
   }
-
 }

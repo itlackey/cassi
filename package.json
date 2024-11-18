@@ -1,6 +1,6 @@
 {
   "name": "@itlackey.dev/cassi",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "src/cli.js",
   "bin": {
     "cassi": "./src/cli.js"

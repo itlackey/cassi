@@ -23,7 +23,7 @@ Cassi bridges this gap by analyzing your existing CSS files and using AI to gene
   Use open-source models locally or integrate with hosted AI services like HuggingFace, Anthropic, OpenAI, etc.
 
 - **Easy to use CLI** with subcommands like `generate`, `init`, etc.
-  - `cassi generate styles/*.css --output-dir docs` for generating documentation
+  - `cassi generate styles/*.css --output docs` for generating documentation
   - `cassi init` to create a new style guide site using 11ty.
   - **Coming Soon** `cassi download http://some.site` to download the CSS file(s) from a URL.
 
@@ -38,18 +38,20 @@ Cassi bridges this gap by analyzing your existing CSS files and using AI to gene
 - **Simple Setup**  
   Quickly integrate Cassi into your workflow with minimal configuration.
 
+- **Incremental Updates** - Cassi will determine what CSS has been added/modified, and add/update the markdown documents accordingly.
+
 ## Quick start
 
 To install Cassi globally, run: `npm install -g itlackey/cassi`
 
 You can now create your Cassi powered style guide site by running: `cassi init <output directory>`.
 
-Now `cd` into the directory and run: `cassi generate assets/css/*.css --output-dir pages/cassi`.
+Now `cd` into the directory and run: `cassi generate assets/css/*.css --output pages/cassi`.
 
 ## Usage Guide
 
 1. **Set Up Your Environment**  
-   Set the values Cassi needs to call the AI model. You can see an example of the settings in `.env.example`. Update the your environment variables based on your setup. If you skip this step, Cassi will use the settings shown below.
+  Set the values Cassi needs to call the AI model. You can see an example of the settings in `.env.example`. Update the your environment variables based on your setup. If you skip this step, Cassi will use the settings shown below.
 
    ```plaintext
     OPENAI_BASE_URL="http://localhost:11434/v1"
@@ -57,6 +59,13 @@ Now `cd` into the directory and run: `cassi generate assets/css/*.css --output-d
     CASSI_MODEL_NAME="qwen2.5-coder:latest"
    ```
 
+  If you are using an Azure OpenAI endpoint your `.env` should look like this
+  ```plaintext
+    CASSI_MODEL_NAME="gpt-4o-mini" #Or the model selected for your deployment
+    OPENAI_API_KEY="<you api key>"
+    OPENAI_BASE_URL="https://<instance name>.openai.azure.com/openai/deployments/<deployment name>"
+    OPENAI_BASE_URL_SUFFIX="?api-version=2024-08-01-preview" #The API version for your deployment
+  ```
 2. **Prepare Your Files**
 
    - Place your CSS files in a directory that Cassi can read.
@@ -67,7 +76,7 @@ Now `cd` into the directory and run: `cassi generate assets/css/*.css --output-d
    Execute the script with the glob patterns for your CSS files and the path to your prompt file:
 
    ```bash
-   cassi generate "./styles/**/*.css" --output <some directory> --prompt <path-to-prompt-file>
+   cassi generate "./styles/**/*.css" --output <some directory> --prompt-file <path-to-prompt-file>
    ```
 
 4. **View the Output**
@@ -94,7 +103,6 @@ Here are some features I am considering adding:
 
 - **Style Grouping** - Allow users to group CSS rules into categories or sections for easier navigation.
 - **Configuration** - Provide a way to easily configure Cassi's behavior through environment variables or configuration files.
-- **Incremental Updates** - Add logic to allow Cassi to determine what CSS has been added/modified, and add/update the markdown documents accordingly.
 
 ## Run The Example
 
