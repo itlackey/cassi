@@ -1,8 +1,42 @@
 import fg from "fast-glob";
-import { readFile, writeFile } from "fs/promises";
+import { readFile, writeFile, readdir } from "fs/promises";
 import css from "css";
 import fs from "fs";
 import fm from "gray-matter";
+import path from "path";
+
+/**
+ * Retrieves the 'id' property from the front matter of all Markdown files in a given directory.
+ *
+ * @param {string} directory - The path to the directory containing Markdown files.
+ * @returns {Promise<Array<{ filePath: string, id: any }>>} - A promise that resolves to an array of objects,
+ * each containing the file path and the 'id' property from the front matter.
+ */
+async function getIdsFromFrontMatter(directory) {
+  try {
+    // Read all entries in the directory
+    const entries = await readdir(directory, { withFileTypes: true });
+
+    // Filter for Markdown files
+    const mdFiles = entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+      .map((entry) => path.join(directory, entry.name));
+
+    // Process each Markdown file
+    const results = await Promise.all(
+      mdFiles.map(async (filePath) => {
+        const content = await readFile(filePath, "utf-8");
+        const { data } = fm(content);
+        return { filePath, id: data.id };
+      })
+    );
+
+    return results;
+  } catch (error) {
+    console.error("Error reading front matter:", error);
+    throw error;
+  }
+}
 
 /**
  * Generates markdown files for CSS rules by using OpenAI API.
@@ -18,7 +52,7 @@ export async function generate(
 ) {
   const openAiUrl = process.env.OPENAI_BASE_URL ?? "http://localhost:11434/v1";
   const openAiKey = process.env.OPENAI_API_KEY ?? "ollama";
-  const model = process.env.CASSI_MODEL_NAME ?? "qwen2.5-coder:latest";//"llama3.2"; 
+  const model = process.env.CASSI_MODEL_NAME ?? "qwen2.5-coder:latest"; //"llama3.2";
 
   if (!outputDir) outputDir = "./output";
   if (!promptFile) promptFile = "./src/prompt.txt";
@@ -27,8 +61,12 @@ export async function generate(
     `Cassi: I am starting on the documentation for these files ${cssPattern}, using model: ${model}...`
   );
 
+  let currentFiles = [];
+  let existingFiles = [];
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);
+  } else {
+    existingFiles = await getIdsFromFrontMatter(outputDir);
   }
 
   if (!fs.existsSync(promptFile))
@@ -159,16 +197,30 @@ export async function generate(
             matter.data.filepath = file;
             matter.data.shortDescription =
               matter.data.shortDescription ?? matter.excerpt;
+            matter.content +=
+              "\n\n## CSS Declarations\n\n```css\n" + cssText + "\n```\n";
 
-            const fileName = `${title
+            let fileName = `${title
               .toLowerCase()
               .replace(/[^\w-]/g, "-")
               .replaceAll("--", "-")}.md`;
 
-            matter.content +=
-              "\n\n## CSS Declarations \n\n```css\n" + cssText + "\n```\n";
+            let filePath = `${outputDir}/${fileName}`;
 
-            const filePath = `${outputDir}/${fileName}`;
+            // Update existing file if it exists
+            if (existingFiles.some((f) => f.id == matter.data.id)) {
+              const existingFile = existingFiles.find(
+                (f) => f.id == matter.data.id
+              );
+              filePath = existingFile.filePath;
+              currentFiles.push(existingFile);
+            } else {
+              // Track new files, for reconciliation later.
+              currentFiles.push({
+                id: matter.data.id,
+                filePath: filePath,
+              });
+            }
 
             writeFile(filePath, fm.stringify(matter), "utf-8")
               .then(() => {
@@ -194,4 +246,25 @@ export async function generate(
       console.error(`Cassi: I was unable to process the ${file}.`, error);
     }
   }
+
+  // Delete all existing files that are not in the currentFiles array.
+  const outdatedFiles = existingFiles.filter(
+    (f) => !currentFiles.some((cf) => cf.id == f.id)
+  );
+
+  if (outdatedFiles.length > 0) {
+    console.log(`Cassi: Deleting ${outdatedFiles.length} outdated files.`);
+    for (const file of outdatedFiles) {
+      try {
+        fs.unlinkSync(file.filePath);
+        console.log(`Cassi: I have deleted ${file.filePath}.`);
+      } catch (err) {
+        console.error(
+          `Cassi: I was unable to delete the file ${file.filePath}.`,
+          err
+        );
+      }
+    }
+  }
+
 }
