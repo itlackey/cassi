@@ -2,7 +2,7 @@
 
 import { readFileSync } from "fs";
 import { Command } from "commander";
-import { generateMarkdownFromCss } from "./cassi.js";
+import { generate } from "./generate.js";
 import { init } from "./init.js";
 
 const packageJson = JSON.parse(
@@ -35,9 +35,9 @@ program
     const { output, promptFile } = options;
 
     try {
-      await generateMarkdownFromCss(cssPattern, output, promptFile);
+      await generate(cssPattern, output, promptFile);
     } catch (err) {
-      console.error("Error generating markdown:", err.message);
+      console.error("Cassi: I encountered an error while generating markdown:", err.message);
       process.exit(1);
     }
   });
@@ -60,11 +60,9 @@ program
       const { tag } = options;
 
       try {
-        console.log("Initializing Eleventy project...");
-        init(outputDir, tag);
-        console.log(`Eleventy project initialized at ./dist`);
+        await init(outputDir, tag);
       } catch (err) {
-        console.error("Error initializing Eleventy project:", err.message);
+        console.error("Cassi: I encountered an error while initializing Eleventy project:", err.message);
         process.exit(1);
       }
     });

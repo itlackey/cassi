@@ -11,7 +11,7 @@ import fm from "gray-matter";
  * @param {string} outputDir - Directory to save generated markdown files.
  * @returns {Promise<void>}
  */
-export async function generateMarkdownFromCss(
+export async function generate(
   cssPattern,
   outputDir = null,
   promptFile = null
