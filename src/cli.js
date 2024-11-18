@@ -3,7 +3,7 @@
 import { readFileSync } from "fs";
 import { Command } from "commander";
 import { generateMarkdownFromCss } from "./cassi.js";
-import { Eleventy } from "@11ty/eleventy";
+import { init } from "./init.js";
 
 const packageJson = JSON.parse(
   readFileSync(new URL("../package.json", import.meta.url), "utf-8")
@@ -44,4 +44,32 @@ program
     }
   });
 
+  //Subcommand: init
+  program
+    .command("init")
+    .description(
+      "Initialize a new Eleventy project with the generated markdown files"
+    )
+    .argument("<outputDir>",
+      "Directory to save generated markdown files"
+    )
+    .option(
+      "--tag <version>",
+      "Version of the starter kit to use. Defaults to 'latest'",
+      "v0.0.1"
+    )
+    .action(async (outputDir, options) => {
+      const { tag } = options;
+
+      try {
+        console.log("Initializing Eleventy project...");
+        init(outputDir, tag);
+        console.log(`Eleventy project initialized at ./dist`);
+      } catch (err) {
+        console.error("Error initializing Eleventy project:", err.message);
+        process.exit(1);
+      }
+    });
+
+    
 program.parse(process.argv);

@@ -1,6 +1,6 @@
 {
   "name": "@itlackey.dev/cassi",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "src/cli.js",
   "bin": {
     "cassi": "./src/cli.js"
@@ -13,10 +13,10 @@
   "license": "MIT",
   "description": "Cassi is a CSS AI Assistant.",
   "dependencies": {
-    "@11ty/eleventy": "^3.0.0",
     "cassi": "github:itlackey/cassi",
     "commander": "^12.1.0",
     "css": "^3.0.0",
-    "fast-glob": "^3.3.2"
+    "fast-glob": "^3.3.2",
+    "unzipper": "^0.12.3"
   }
 }
