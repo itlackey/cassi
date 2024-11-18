@@ -57,10 +57,12 @@ The `.btn-primary` rule defines the primary styling for buttons that should stan
 
 Here's how to use this rule in your HTML:
 
-```html
-<button class="btn btn-primary">Primary</button>
-<button class="btn btn-submit">Submit</button>
-```
+<pre>
+<code class="language-html">
+&lt;button class="btn btn-primary"&gt;Primary&lte;/button&gt;
+&lt;button class="btn btn-primary"&gt;Primary&lte;/button&gt;
+</code>
+</pre>
 
 
 ## Example
