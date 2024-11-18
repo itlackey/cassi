@@ -51,6 +51,7 @@ export async function generate(
   promptFile = null
 ) {
   const openAiUrl = process.env.OPENAI_BASE_URL ?? "http://localhost:11434/v1";
+  const openAiUrlSuffix = process.env.OPENAI_BASE_URL_SUFFIX ?? "";
   const openAiKey = process.env.OPENAI_API_KEY ?? "ollama";
   const model = process.env.CASSI_MODEL_NAME ?? "qwen2.5-coder:latest"; //"llama3.2";
 
@@ -94,7 +95,7 @@ export async function generate(
 
             const prompt = promptTemplate.replace("{{cssText}}", cssText);
 
-            const response = await fetch(openAiUrl + "/chat/completions", {
+            const response = await fetch(openAiUrl + "/chat/completions" + openAiUrlSuffix, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
