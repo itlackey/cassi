@@ -95,11 +95,14 @@ export async function generate(
 
             const prompt = promptTemplate.replace("{{cssText}}", cssText);
 
-            const response = await fetch(openAiUrl + "/chat/completions" + openAiUrlSuffix, {
+            const url = openAiUrl + "/chat/completions" + openAiUrlSuffix;
+
+            const response = await fetch(url, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${openAiKey}`,
+                'api-key': openAiKey,
               },
               body: JSON.stringify({
                 model,
@@ -118,7 +121,8 @@ export async function generate(
               const errorText = await response.text();
               console.error(
                 `Cassi: Failed to generate markdown for selector: ${selector}`,
-                errorText
+                errorText,
+                url
               );
               continue;
             }
