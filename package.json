@@ -17,6 +17,7 @@
     "commander": "^12.1.0",
     "css": "^3.0.0",
     "fast-glob": "^3.3.2",
+    "gray-matter": "^4.0.3",
     "unzipper": "^0.12.3"
   }
 }

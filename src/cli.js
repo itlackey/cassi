@@ -35,9 +35,7 @@ program
     const { output, promptFile } = options;
 
     try {
-      console.log("Generating markdown...");
       await generateMarkdownFromCss(cssPattern, output, promptFile);
-      console.log(`Markdown files saved to: ${output}`);
     } catch (err) {
       console.error("Error generating markdown:", err.message);
       process.exit(1);
@@ -71,5 +69,5 @@ program
       }
     });
 
-    
+
 program.parse(process.argv);

@@ -1,7 +1,6 @@
-You are a highly experienced front-end designer that is known for creating great CSS style guides. 
+Create a detailed style guide for the following CSS based on the instructions and example output below:
 
-Create a detailed markdown file for the following CSS based on the instructions and example output below:
-
+## CSS
 ```css
 {{cssText}}
 ```
@@ -9,33 +8,31 @@ Create a detailed markdown file for the following CSS based on the instructions 
 ## Instructions:
 Create a markdown file formatted as follows:
 
-#### Front Matter
+### Front Matter
+
 Add front matter compatible with 11ty, including:
 - `title`: A friendly and descriptive title for the rule.
 - `shortDescription`: A concise description of what the rule does.
 - `tags`: An array of tags such as `['button', '.btn-primary', 'button:hover']`
-  - Note: tags should ALWAYS contain 'cassi' in the array.
-- `selectors`: An array containing the CSS selectors for the rule.
+- `filename`: A slugified filename based on the title.
 
 It is VERY important that the front matter is correctly formatted and includes all required fields. 
-Failure to include these fields will result in errors when using 11ty. 
 It **MUST** include `---` before and after the YAML properties of the front matter.
+Failure to include these fields or properly wrap the front matter YAML with `---` will result in errors when using 11ty. 
 
-Here is an example:
+Here is an example of properly formatted front matter:
 
 ```markdown
 ---
 title: "Button Styling"
 shortDescription: "Button styling for highlighting important actions."
-tags: ["cassi","CSS", "Styles", "Selectors"]
-selectors:
-    - '.btn'
-    - '.btn.btn-primary'
-    - '.btn.btn-submit'
+tags: [<string array of related tags>]
+filename: "<slugified filename>"
 ---
 ```
 
-#### Content
+### Content
+
 Include the following in the markdown content:
 1. A detailed description of what the CSS rule does.
 2. Examples of how to use the rule, including HTML snippets styled by the CSS.
@@ -45,11 +42,8 @@ Include the following in the markdown content:
 ---
 title: "Button Styling"
 shortDescription: "Button styling for highlighting important actions."
-tags: ["cassi","CSS", "Styles", "Selectors"]
-selectors:
-    - '.btn'
-    - '.btn.btn-primary'
-    - '.btn.btn-submit'
+tags: ["button", "submit", "primary", "btn", "btn-primary", "btn-submit"]
+filename: "button-styling.md"
 ---
 
 ## Button Styling
@@ -79,23 +73,3 @@ Here's how to use this rule in your HTML:
 ## Developer Notes
 
 - Use `.btn-primary` sparingly to maintain emphasis on important actions.
-
-
-## CSS Declarations
-
-```css
-.btn {
-  border: 1px solid #007bff;
-  padding: 10px 15px;
-  border-radius: 5px;
-}
-.btn.btn-primary {
-  background-color: #007bff;
-  color: #fff;
-}
-
-.btn.btn-submit {
-  background-color: #fff;
-  color: #000;
-}
-```
