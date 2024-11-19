@@ -27,24 +27,25 @@ program
   .command("generate")
   .description("Generate markdown documentation from CSS files")
   .argument("<cssPattern>", "Glob pattern to match CSS files")
+  .argument("[outputDir]", "Directory to save generated markdown files", "./output")
   .option(
-    "--output <outputDir>",
-    "Directory to save generated markdown files",
-    "./output"
+    "-o, --output [outputDir]",
+    "Directory to save generated markdown files"
   )
   .option(
-    "--prompt-file <prompt>",
-    "Path to the prompt template file"
+    "-e, --example [exampleFile]",
+    "Path to the example output file you would like to use (default: system example)"
   )
   .option(
-    "--force, -f",
-    "Force existing files to be updated"
+    "-f, --force",
+    "Force existing files to be updated",
+    false
   )
-  .action(async (cssPattern, options) => {
-    const { output, promptFile, force } = options;
+  .action(async (cssPattern, outputDir, options) => {
+    const { output, example, force } = options;
 
     try {
-      await generate(cssPattern, output, promptFile, force);
+      await generate(cssPattern, output ?? outputDir, example, force);
     } catch (err) {
       console.error(
         "Cassi: I encountered an error while generating markdown:",

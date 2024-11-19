@@ -46,14 +46,14 @@ async function getIdsFromFrontMatter(directory) {
 /**
  * Generates markdown files for CSS rules by using OpenAI API.
  * @param {string} cssPattern - Glob pattern to locate CSS files.
- * @param {string} promptFile - Path to the prompt file.
+ * @param {string} exampleFile - Path to an example file.
  * @param {string} outputDir - Directory to save generated markdown files.
  * @returns {Promise<void>}
  */
 export async function generate(
   cssPattern,
   outputDir = null,
-  promptFile = null,
+  exampleFile = null,
   force = false
 ) {
   const openAiUrl = process.env.OPENAI_BASE_URL ?? "http://localhost:11434/v1";
@@ -62,11 +62,19 @@ export async function generate(
   const model = process.env.CASSI_MODEL_NAME ?? "qwen2.5-coder:latest"; //"llama3.2";
 
   if (!outputDir) outputDir = "./output";
-  if (!promptFile) {
-    //Should use the prompt file in the same directory as the script
-    promptFile = path.join(import.meta.dirname, "prompt.txt");
-    if (!existsSync(promptFile))
-      throw new Error("Prompt file not found: " + promptFile);
+
+  //Should use the prompt file in the same directory as the script
+  let promptFile = path.join(import.meta.dirname, "prompt.txt");
+
+  if (!fs.existsSync(promptFile))
+    throw new Error("Prompt file not found: " + exampleFile);
+
+  if (!existsSync(exampleFile)) {
+    if (exampleFile != null)
+      console.warn(
+        `Cassi: Could not find example file: ${exampleFile}. Using default example...`
+      );
+    exampleFile = path.join(import.meta.dirname, "example.md");
   }
 
   console.log(
@@ -76,14 +84,13 @@ export async function generate(
   let currentFiles = [];
   let existingFiles = [];
   if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir);
+    fs.mkdirSync(outputDir, {recursive: true });
   } else {
     existingFiles = await getIdsFromFrontMatter(outputDir);
   }
 
-  if (!fs.existsSync(promptFile))
-    throw new Error("Prompt file not found: " + promptFile);
-  const promptTemplate = await readFile(promptFile, "utf-8");
+  let promptTemplate = await readFile(promptFile, "utf-8");
+  const exampleTemplate = await readFile(exampleFile, "utf-8");
 
   const cssFiles = await fg(cssPattern);
   console.log(
@@ -106,18 +113,33 @@ export async function generate(
             };
             let cssText = css.stringify(ast);
             let selector = rule.selectors.join(", ");
-            const id = btoa(rule.selectors.join(", "));
+            const id = btoa(selector);
             const hash = btoa(cssText);
 
             // Check if the rule already exists
-            if (!force && existingFiles.some((f) => f.id == id && f.hash == hash)) {
+            const existingDoc = existingFiles.find(
+              (f) => f.id == id && f.hash == hash
+            );
+            if (existingDoc) {
+              if (force) {
+                console.log(
+                  `Cassi: Updating documentation for ${selector} in ${existingDoc.filePath}`
+                );
+              } else {
+                console.log(
+                  `Cassi: The documentation for ${selector} already exists, skipping it.`
+                );
+                currentFiles.push(existingDoc);
+                continue;
+              }
+            } else {
               console.log(
-                `Cassi: The documentation for ${selector} already exists, skipping it.`
+                `Cassi: Writing documentation for ${selector}...`
               );
-              continue;
             }
 
-            const prompt = promptTemplate.replace("{{cssText}}", cssText);
+            let prompt = promptTemplate.replace("{{cssText}}", cssText);
+            prompt = `${prompt}\n\n===EXAMPLE OUTPUT===\n\n${exampleTemplate}\n\n===END EXAMPLE OUTPUT===`;
 
             const url = openAiUrl + "/chat/completions" + openAiUrlSuffix;
 
@@ -217,27 +239,46 @@ export async function generate(
               }
             }
 
+            if (!fm.test(markdownContent)) {
+              console.error(
+                `Cassi: The response for ${selector} is not valid, and cannot be used. Skipping...`,
+                { cause: "invalid-markdown" }
+              );
+              continue;
+            }
+
             const matter = fm(markdownContent, { excerpt: true });
             //console.log("matter", matter);
 
-            const cassiData = {
-              id,hash,source: file
-            }
             const title = matter.data.title ?? selector;
-            matter.data.selectors = rule.selectors;
-            matter.data.tags = [...(matter.data.tags ?? []), "cassi"];
-            matter.data.cassi = cassiData;
-            matter.data.shortDescription =
-              matter.data.shortDescription ?? matter.excerpt;
-            matter.content +=
-              "\n\n## CSS Declarations\n\n```css\n" + cssText + "\n```\n";
-
-            let fileName = `${title
+            let filename = `${title
               .toLowerCase()
               .replace(/[^\w-]/g, "-")
               .replaceAll("--", "-")}.md`;
 
-            let filePath = `${outputDir}/${fileName}`;
+            if (existingDoc) {
+              filename = existingDoc.filePath;
+            }
+
+            const cassiData = {
+              id,
+              hash,
+              source: file,
+              filename,
+            };
+            matter.data.cassi = cassiData;
+            matter.data.selectors = rule.selectors;
+            matter.data.tags = [...(matter.data.tags ?? []), "cassi"];
+            matter.data.shortDescription =
+              matter.data.shortDescription ?? matter.excerpt;
+            matter.data.updated = new Date().toISOString();
+            
+            matter.content +=
+              "\n\n## CSS Declarations\n\n```css\n" + cssText + "\n```\n";
+
+            let filePath = filename;
+            if (!filename.startsWith(outputDir))
+              filePath = path.join(outputDir, filename);
 
             // Update existing file if it exists
             if (existingFiles.some((f) => f.id == matter.data.id)) {
@@ -271,7 +312,9 @@ export async function generate(
           }
         } catch (error) {
           console.error(
-            `Cassi: An error occurred while processing the ${rule} rule.`,
+            `Cassi: An error occurred while processing the ${rule.selectors?.join(
+              ","
+            )} rule.`,
             error
           );
         }
@@ -281,28 +324,35 @@ export async function generate(
     }
   }
 
-  // Delete all existing files that are not in the currentFiles array for the currently processed CSS files
-  const outdatedFiles = existingFiles.filter((e) =>
-    cssFiles
-      .some((p) => p === e.source)
-      .filter((f) => !currentFiles.some((cf) => cf.id == f.id))
-  );
+  try {
+    if (cssFiles?.length == 0) return;
 
-  if (outdatedFiles.length > 0) {
-    console.log(`Cassi: Deleting ${outdatedFiles.length} outdated files.`);
-    for (const file of outdatedFiles) {
-      try {
-        // fs.unlinkSync(file.filePath);
-        //console.log(`Cassi: I have deleted ${file.filePath}.`);
-        console.warn(
-          `Cassi: The ${file.filePath} does not appear to be needed. You may want to delete this file.`
-        );
-      } catch (err) {
-        console.error(
-          `Cassi: I was unable to delete the file ${file.filePath}.`,
-          err
-        );
+    // Delete all existing files that are not in the currentFiles array for the currently processed CSS files
+    const outdatedFiles = existingFiles
+      .filter((e) => !cssFiles.some((css) => css == e.source))
+      .filter((e) => currentFiles.some((cf) => cf.id == e.id) == false);
+
+    if (outdatedFiles.length > 0) {
+      console.log(`Cassi: Deleting ${outdatedFiles.length} outdated files.`);
+      for (const file of outdatedFiles) {
+        try {
+          // fs.unlinkSync(file.filePath);
+          //console.log(`Cassi: I have deleted ${file.filePath}.`);
+          console.warn(
+            `Cassi: The ${file.filePath} does not appear to be needed. You may want to delete this file.`
+          );
+        } catch (err) {
+          console.error(
+            `Cassi: I was unable to delete the file ${file.filePath}.`,
+            err
+          );
+        }
       }
     }
+  } catch (error) {
+    console.error(
+      `Cassi: An error occurred while deleting outdated files.`,
+      error
+    );
   }
 }
